@@ -87,7 +87,7 @@ public class UtilEncode {
 	 * Xml 转码.
 	 */
 	public static String escapeXml(String xml) {
-		return StringEscapeUtils.escapeXml(xml);
+		return StringEscapeUtils.escapeXml11(xml);
 	}
 
 	/**
