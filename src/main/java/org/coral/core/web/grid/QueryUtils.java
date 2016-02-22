@@ -183,13 +183,19 @@ public class QueryUtils {
 			if (rules != null)
 				for (Filter f : rules) {
 					Object realSearch = null;
+					boolean isDate = false;
+					java.util.Date dateBegin = null,dateEnd = null;
 					try {
 						if ("eq".equals(f.getOp()) || "ne".equals(f.getOp()) || "lt".equals(f.getOp()) || "le".equals(f.getOp()) || "gt".equals(f.getOp()) || "ge".equals(f.getOp())) {
-							Class claz = BeanUtils.getMultiLayerType(pr.getEntity(), f.getField());
-							
-							if(BeanUtils.isBaseType(claz)){
+							Class<?> claz = BeanUtils.getMultiLayerType(pr.getEntity(), f.getField());
+							if(java.util.Date.class.equals(claz) && f.getData().length()==10){
+								isDate = true;
+								dateBegin = UtilDateTime.toDataTime(f.getData()+" 00:00:00");
+								dateEnd = UtilDateTime.toDataTime(f.getData()+" 23:59:59");
+							}else if(BeanUtils.isBaseType(claz)){
 								realSearch = ConvertUtils.convert(f.getData(), claz);
 							}
+							
 						}
 					} catch (Exception e) {
 						logger.error("查询内容转换类别失败："+pr.getEntity()+":"+f.getField()+":"+f.getData());
@@ -199,22 +205,40 @@ public class QueryUtils {
 					Criterion one = null;
 					switch (f.getOp()) {
 					case "eq":// 等于
-						one = Restrictions.eq(field, realSearch);
+						if(isDate)
+							one = Restrictions.and(Restrictions.ge(field,dateBegin),Restrictions.le(field,dateEnd));
+						else
+							one = Restrictions.eq(field, realSearch);
 						break;
 					case "ne":// 不等
-						one = Restrictions.ne(field, realSearch);
+						if(isDate)
+							one = Restrictions.and(Restrictions.lt(field,dateBegin),Restrictions.gt(field,dateEnd));
+						else
+							one = Restrictions.ne(field, realSearch);
 						break;
 					case "gt":// 大于
-						one = Restrictions.gt(field, realSearch);
+						if(isDate)
+							one = Restrictions.gt(field,dateEnd);
+						else
+							one = Restrictions.gt(field, realSearch);
 						break;
 					case "ge":// 大于等于
-						one = Restrictions.ge(field, realSearch);
+						if(isDate)
+							one = Restrictions.ge(field,dateBegin);
+						else
+							one = Restrictions.ge(field, realSearch);
 						break;
 					case "lt":// 小于
-						one = Restrictions.lt(field, realSearch);
+						if(isDate)
+							one = Restrictions.lt(field,dateBegin);
+						else
+							one = Restrictions.lt(field, realSearch);
 						break;
 					case "le":// 小于等于
-						one = Restrictions.le(field, realSearch);
+						if(isDate)
+							one = Restrictions.le(field,dateEnd);
+						else
+							one = Restrictions.le(field, realSearch);
 						break;
 					case "bw":// 开始于
 						one = Restrictions.like(field, f.getData(), MatchMode.START);

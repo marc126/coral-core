@@ -427,11 +427,7 @@
 	<distributionManagement>
 		<repository>
 			<id>releases</id>
-<<<<<<< HEAD
 			<url>file://${project.basedir}/pub</url>
-=======
-			<url>file://${project.basedir}/pub/releases</url>
->>>>>>> a1c9dbce89405073aff6a77ca44b5eaecc70d1c4
 		</repository>
 		<snapshotRepository>
 			<id>snapshots</id>
