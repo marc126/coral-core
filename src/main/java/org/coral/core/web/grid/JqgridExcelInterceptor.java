@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -78,9 +79,10 @@ public class JqgridExcelInterceptor implements HandlerInterceptor{
 			int j = 0;
 			for(String k:realCols){
 				Object v = one.get(k);
+				Cell c = row.createCell(j++);
 				if(v==null)
 					continue;
-				row.createCell(j++).setCellValue(ConvertUtils.convert(v));
+				c.setCellValue(ConvertUtils.convert(v));
 			}
 		}
 		
