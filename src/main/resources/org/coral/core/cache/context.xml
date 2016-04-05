@@ -23,14 +23,6 @@
 		<property name="shared" value="true" />
 	</bean>
 
-	<bean class="org.springframework.jmx.export.MBeanExporter">
-		<property name="beans">
-			<map>
-				<entry key="coral:name=ehCacheManagerMBean" value-ref="ehCache" />
-			</map>
-		</property>
-	</bean>
-
 	<alias alias="cacheManager" name="ehCacheManager" />
 	
 	<bean id="ehCacheManager" class="org.coral.core.cache.EhCacheManager"/>

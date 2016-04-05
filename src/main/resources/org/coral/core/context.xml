@@ -15,8 +15,8 @@
 
 	<description>Coral-core配置</description>
 	
-	<context:mbean-export default-domain="coral" registration="replaceExisting" />
-
+	<context:mbean-export/>
+      
 	<bean class="org.coral.core.service.ServiceHolder" lazy-init="false"/>
 	<!-- 消息Queue管理器-->
 	<bean class="org.coral.core.queue.QueueHolder"/>
