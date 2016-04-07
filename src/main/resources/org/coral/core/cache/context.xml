@@ -22,20 +22,12 @@
 		</property>
 		<property name="shared" value="true" />
 	</bean>
-
-	<alias alias="cacheManager" name="ehCacheManager" />
 	
-	<bean id="ehCacheManager" class="org.coral.core.cache.EhCacheManager"/>
+	<bean id="ehCacheManager" class="org.coral.core.cache.EhCacheManagerImpl"/>
 	
 	<bean id="springEhCacheManager" class="org.springframework.cache.ehcache.EhCacheCacheManager">
 		<property name="cacheManager" ref="ehCache" />
 	</bean>
 
-	<bean id="memCacheManager" class="org.coral.core.cache.MemCacheManager"
-		init-method="init" destroy-method="destroy">
-		<property name="servers" value="${memcached.servers}" />
-	</bean>
-
 	<cache:annotation-driven  cache-manager="springEhCacheManager"/>
-	
 </beans>

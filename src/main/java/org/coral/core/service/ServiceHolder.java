@@ -34,7 +34,7 @@ public class ServiceHolder implements ApplicationContextAware,DisposableBean {
 	
 	public static <T> T getBeanByType(Class<T> beanClass){
 		assertContextInjected();
-		return (T) applicationContext.getBeansOfType(beanClass);
+		return (T) applicationContext.getBean(beanClass);
 	}
 
 	@Override

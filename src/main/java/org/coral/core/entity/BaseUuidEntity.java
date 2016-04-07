@@ -10,9 +10,9 @@ import org.hibernate.annotations.GenericGenerator;
 public abstract class BaseUuidEntity extends BaseEntity{
 	
 	@Id
-	@Column(length=32)
-	@GeneratedValue(generator = "system-uuid")
-	@GenericGenerator(name = "system-uuid", strategy = "uuid")
+	@Column(length=22)
+	@GenericGenerator(name = "uuidGenerator", strategy = "org.coral.core.entity.Base64UuidGenerator")
+    @GeneratedValue(generator = "uuidGenerator")
 	protected String id;
 	
 	@Override
