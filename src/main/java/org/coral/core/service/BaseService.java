@@ -177,6 +177,8 @@ public abstract class BaseService<T extends BaseEntity> {
 		StringBuilder sb = new StringBuilder();
 		sb.append("(");
 		for (Serializable id : ids) {
+			if(id instanceof String)
+				id = "'"+id+"'";
 			sb.append(id + ",");
 		}
 		sb.deleteCharAt(sb.length()-1);
