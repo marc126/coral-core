@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
 public abstract class BaseService<T extends BaseEntity> {
-	protected static final Log logger = LogFactory.getLog(BaseService.class);
+	protected Log logger = LogFactory.getLog(this.getClass());
 	@PersistenceContext
 	private EntityManager em;
 	private Class<T> entityClass;
