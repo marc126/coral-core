@@ -12,20 +12,20 @@
 		<!-- 主要依赖库的版本定义 -->
 		<ehcache.version>2.6.11</ehcache.version>
 		<ehcache-web.version>2.0.4</ehcache-web.version>
-		<ognl.version>3.1.2</ognl.version>
+		<ognl.version>3.1.10</ognl.version>
 		<freemarker.version>2.3.23</freemarker.version>
-		<dbunit.version>2.5.1</dbunit.version>
-		<spring.version>4.2.4.RELEASE</spring.version>
-		<hibernate.version>5.0.7.Final</hibernate.version>
-		<spring-data-jpa.version>1.9.2.RELEASE</spring-data-jpa.version>
+		<dbunit.version>2.5.2</dbunit.version>
+		<spring.version>4.3.0.RELEASE</spring.version>
+		<hibernate.version>5.2.1.Final</hibernate.version>
+		<spring-data-jpa.version>1.10.2.RELEASE</spring-data-jpa.version>
 		<sitemesh.version>2.4.2</sitemesh.version>
 		<hibernate-validator.version>5.2.2.Final</hibernate-validator.version>
 		<logback.version>1.1.7</logback.version>
-		<slf4j.version>1.7.20</slf4j.version>
+		<slf4j.version>1.7.21</slf4j.version>
 		<commons-lang3.version>3.4</commons-lang3.version>
 		<commons-beanutils.version>1.9.2</commons-beanutils.version>
 		<guava.version>19.0</guava.version>
-		<joda-time.version>2.9.2</joda-time.version>
+		<joda-time.version>2.9.4</joda-time.version>
 		<junit.version>4.12</junit.version>
 		<xmemcached.version>2.0.0</xmemcached.version>
 		<dozer.version>5.5.1</dozer.version>
@@ -45,7 +45,7 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>compile</scope>
-			<version>9.4.1207.jre7</version>
+			<version>9.4.1208.jre7</version>
 		</dependency>
 		<dependency>
 		   <groupId>ma.glasnost.orika</groupId>
@@ -144,18 +144,18 @@
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
 			<scope>compile</scope>
-			<version>1.8.8</version>
+			<version>1.8.9</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
 			<scope>compile</scope>
-			<version>1.8.8</version>
+			<version>1.8.9</version>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
-			<version>3.2.0</version>
+			<version>3.2.4</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
