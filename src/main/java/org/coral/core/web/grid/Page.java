@@ -6,19 +6,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ognl.Ognl;
-
 import org.coral.core.entity.BaseEntity;
 import org.coral.core.mapper.JsonMapper;
 import org.coral.core.utils.BeanUtils;
 import org.coral.core.utils.UtilDateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import ognl.Ognl;
+
 public class Page<T extends BaseEntity> implements Serializable {
-	private static Logger logger = LoggerFactory.getLogger(Page.class);
 	public Page(List<T> list,String[] rowNames,int page,long records, int size){
 		this.entitys = list;
 		this.rowNames=rowNames;
@@ -28,6 +25,14 @@ public class Page<T extends BaseEntity> implements Serializable {
 		for(T t:list)
 			this.addOneRow(t, rowNames);
 	}
+	
+	public Page(List<T> list,int page,long records, int size){
+		this.entitys = list;
+		this.page = page;
+		this.records = records;
+		this.size = size;
+	}
+	
 	public Page(org.springframework.data.domain.Page<T> pg,String[] rowNames){
 		this.entitys = pg.getContent();
 		this.page = pg.getNumber();

@@ -90,9 +90,7 @@ public class SequenceService extends BaseService<CoreSequence> {
 	}
 	
 	private CoreSequence getSequence(String key){
-		List seqs = this.createQuery("from CoreSequence where mykey = :key")
-		.setString("key", key)
-		.list();
+		List seqs = this.createQuery("from CoreSequence where mykey = :key").setParameter("key", key).getResultList();
 		return (seqs == null || seqs.isEmpty()) ? null : (CoreSequence) seqs.get(0);
 	}
 
