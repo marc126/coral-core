@@ -19,24 +19,14 @@ import javax.persistence.metamodel.EntityType;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.coral.core.dao.CriteriaSetup;
-import org.coral.core.dao.CriteriaSetup.OrderType;
 import org.coral.core.dao.QuerySetup;
 import org.coral.core.entity.BaseEntity;
 import org.coral.core.exception.Assert;
-import org.coral.core.exception.BizException;
-import org.coral.core.utils.BeanUtils;
 import org.coral.core.utils.GenericsUtils;
 import org.coral.core.utils.UtilString;
 import org.coral.core.web.grid.Page;
 import org.coral.core.web.grid.PageRequest;
 import org.coral.core.web.grid.QueryUtils;
-import org.hibernate.Criteria;
-import org.hibernate.Session;
-import org.hibernate.criterion.CriteriaSpecification;
-import org.hibernate.criterion.Projection;
-import org.hibernate.criterion.Projections;
-import org.hibernate.internal.CriteriaImpl;
 import org.springframework.transaction.annotation.Transactional;
 
 @Transactional(readOnly = true)
@@ -106,7 +96,7 @@ public abstract class BaseService<T extends BaseEntity> {
 	public Page<T> findPage(QuerySetup qs, PageRequest pr) {
 
 		// 转换过滤条件
-		// QueryUtils.buildFilter(pr, base);
+		QueryUtils.buildFilter(pr, qs);
 		if (UtilString.isNotEmpty(pr.getSidx())) {
 			if ("asc".equals(pr.getSord()))
 				qs.setOrder(pr.getSidx(), "asc");
@@ -126,55 +116,7 @@ public abstract class BaseService<T extends BaseEntity> {
 		return QuerySetup.forClass(getEntityClass(), em);
 	}
 	
-	public Page<T> findPage(CriteriaSetup base, PageRequest pr) {
-		int start = (pr.getPage() - 1) * pr.getRows();
-
-		Criteria criteria = ((Session) em.getDelegate()).createCriteria(getEntityClass());
-		// 转换过滤条件
-		QueryUtils.buildFilter(pr, base);
-		if (UtilString.isNotEmpty(pr.getSidx())) {
-			base.clearSort();
-			if ("asc".equals(pr.getSord()))
-				base.addSort(pr.getSidx(), OrderType.ASC);
-			else
-				base.addSort(pr.getSidx(), OrderType.DESC);
-		}
-		base.setup(criteria);
-
-		CriteriaImpl impl = (CriteriaImpl) criteria;
-		// 先把Projection和OrderBy条件取出来,清空两者来执行Count操作
-		Projection projection = impl.getProjection();
-		List<CriteriaImpl.OrderEntry> orderEntries;
-		try {
-			orderEntries = (List) BeanUtils.forceGetProperty(impl, "orderEntries");
-			BeanUtils.forceSetProperty(impl, "orderEntries", new ArrayList());
-		} catch (Exception e) {
-			throw new BizException("分页处理order时候异常");
-		}
-		long totalCount = 0;
-		try {
-			totalCount = (Long) criteria.setProjection(Projections.rowCount()).uniqueResult();
-		} catch (Exception e) {
-			logger.error("处理分页查询时出错，请检查输入参数！" + criteria.toString());
-			return null;
-		}
-		// 将之前的Projection和OrderBy条件重新设回去
-		criteria.setProjection(projection);
-		if (projection == null) {
-			criteria.setResultTransformer(CriteriaSpecification.ROOT_ENTITY);
-		}
-		// criteria.setResultTransformer(Criteria.DISTINCT_ROOT_ENTITY);
-		try {
-			BeanUtils.forceSetProperty(impl, "orderEntries", orderEntries);
-		} catch (Exception e) {
-			throw new InternalError(" Runtime Exception impossibility throw ");
-		}
-
-		List<T> list = criteria.setFirstResult(start).setMaxResults(pr.getRows()).list();
-		Page<T> page = new Page<T>(list, pr.getFields(), pr.getPage(), totalCount, pr.getRows());
-		return page;
-	}
-
+	
 	/**
 	 * 判断实体是否存在
 	 * 

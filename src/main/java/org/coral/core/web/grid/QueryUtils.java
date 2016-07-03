@@ -1,22 +1,20 @@
 package org.coral.core.web.grid;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.persistence.criteria.Predicate;
+
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.commons.beanutils.converters.DateConverter;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.coral.core.dao.CriteriaSetup;
-import org.coral.core.dao.CriteriaSetup.MatchType;
+import org.coral.core.dao.QuerySetup;
 import org.coral.core.utils.BeanUtils;
 import org.coral.core.utils.UtilDateTime;
 import org.coral.core.utils.UtilString;
-import org.hibernate.criterion.Criterion;
-import org.hibernate.criterion.MatchMode;
-import org.hibernate.criterion.Restrictions;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,17 +25,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  */
 public class QueryUtils {
 	protected static final Log logger = LogFactory.getLog(QueryUtils.class);
-	public static void buildFilter(PageRequest pr, CriteriaSetup cs) {
+	
+	public static void buildFilter(PageRequest pr, QuerySetup qs) {
 		if (pr.isSearch()) {
 			if (UtilString.isNotEmpty(pr.getFilters())) {// 多条件查询
-				buildMultipleFilter(pr, cs);
+				buildMultipleFilter(pr, qs);
 			} else {// 单字段查询
-				buildSimpleFilter(pr, cs);
+				buildSimpleFilter(pr, qs);
 			}
 		}
 	}
-	
-	private static void buildSimpleFilter(PageRequest pr, CriteriaSetup cs) {
+	private static void buildSimpleFilter(PageRequest pr, QuerySetup qs) {
 		Object realSearch = null;
 		try {
 			if ("eq".equals(pr.getSearchOper())
@@ -57,76 +55,66 @@ public class QueryUtils {
 		}
 		switch (pr.getSearchOper()) {
 		case "eq":// 等于
-			cs.addFilter(pr.getSearchField(), realSearch,MatchType.EQ);
+			qs.eq(pr.getSearchField(), realSearch);
 			break;
 		case "ne":// 不等
-			cs.addFilter(pr.getSearchField(), realSearch,MatchType.NE);
+			qs.notEq(pr.getSearchField(), realSearch);
 			break;
 		case "lt":// 小于
-			cs.addFilter(pr.getSearchField(), realSearch,MatchType.LT);
+			qs.lt(pr.getSearchField(), realSearch);
 			break;
 		case "le":// 小于等于
-			cs.addFilter(pr.getSearchField(), realSearch,MatchType.LE);
+			qs.le(pr.getSearchField(), realSearch);
 			break;
 		case "gt":// 大于
-			cs.addFilter(pr.getSearchField(), realSearch,MatchType.GT);
+			qs.gt(pr.getSearchField(), realSearch);
 			break;
 		case "ge":// 大于等于
-			cs.addFilter(pr.getSearchField(), realSearch,MatchType.GE);
+			qs.ge(pr.getSearchField(), realSearch);
 			break;
 		case "bw":// 开始于
-			cs.addFilter(pr.getSearchField(),pr.getSearchString(),MatchType.BEGIN);
+			qs.like(pr.getSearchField(), pr.getSearchString() + "%");
 			break;
 		case "bn":// 不开始于
-			cs.addFilter(pr.getSearchField(), pr.getSearchString(),
-					MatchType.NBEGIN);
+			qs.notLike(pr.getSearchField(), pr.getSearchString()+"%");
 			break;
 		case "ew":// 结束于
-			cs.addFilter(pr.getSearchField(), pr.getSearchString(),
-					MatchType.END);
+			qs.like(pr.getSearchField(), "%"+pr.getSearchString());
 			break;
 		case "en":// 不结束于
-			cs.addFilter(pr.getSearchField(), pr.getSearchString(),
-					MatchType.NEND);
+			qs.notLike(pr.getSearchField(), "%"+ pr.getSearchString());
 			break;
 		case "cn":// 包含
-			cs.addFilter(pr.getSearchField(), pr.getSearchString(),
-					MatchType.LIKE);
+			qs.like(pr.getSearchField(), pr.getSearchString());
 			break;
 		case "nc":// 不包含
-			cs.addFilter(pr.getSearchField(), pr.getSearchString(),
-					MatchType.NLIKE);
+			qs.notLike(pr.getSearchField(), pr.getSearchString());
 			break;
 		case "nu":// 空
-			cs.addFilter(pr.getSearchField(), realSearch, MatchType.NULL);
+			qs.isNull(pr.getSearchField());
 			break;
 		case "nn":// 非空
-			cs.addFilter(pr.getSearchField(), realSearch, MatchType.NNULL);
+			qs.isNotNull(pr.getSearchField());
 			break;
 		case "in":// 属于
-			cs.addFilter(pr.getSearchField(), pr.getSearchString().split(","),
-					MatchType.IN);
+			qs.in(pr.getSearchField(), Arrays.asList(pr.getSearchString().split(",")));
 			break;
 		case "ni":// 不属于
-			cs.addFilter(pr.getSearchField(), pr.getSearchString().split(","),
-					MatchType.NIN);
+			qs.notIn(pr.getSearchField(), Arrays.asList(pr.getSearchString().split(",")));
 			break;
 		}
 	}
-
-	private static void buildMultipleFilter(PageRequest pr, CriteriaSetup cs) {
+	
+	private static void buildMultipleFilter(PageRequest pr, QuerySetup qs) {
 		ObjectMapper mapper = new ObjectMapper();
 		try {
 			JsonNode jn = mapper.readTree(pr.getFilters());
 			MultipleFilter f = new QueryUtils().new MultipleFilter(jn);
-			Criterion c = f.buildCriterion(pr,cs);
-			if(c!=null)
-				cs.addCriterion(c);
+			f.build(pr,qs);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
-
 
 
 	public class MultipleFilter {
@@ -153,33 +141,14 @@ public class QueryUtils {
 			}
 		}
 		
-		private String makeAlias(CriteriaSetup cs,String name){
-			String fieldName = name;
-			if(name.indexOf('.') != -1) {
-				String lastNode = StringUtils.substringAfterLast(name, ".");
-				String[] as = name.split("\\.");
-				String alias = "";
-				for(int i=0;i<as.length-1;i++){
-					if("".equals(alias))
-						alias +=as[i];
-					else
-						alias += "."+as[i];
-					if(!cs.isExistAlias(alias))
-						cs.addAlias(alias, as[i]);
-					fieldName = as[i]+"."+lastNode;;
-				}
-			}
-			return fieldName;
-		}
-		
 		{
 			DateConverter converter = new DateConverter();
 			converter.setPatterns(new String[]{UtilDateTime.SIMPLEFORMATSTRING,UtilDateTime.DEFAULTFORMAT,UtilDateTime.SHORTFORMAT});
 			ConvertUtils.register(converter, java.util.Date.class);
 		}
-		public Criterion buildCriterion(PageRequest pr,CriteriaSetup cs) {
-			List<Criterion> total = new ArrayList<Criterion>();
-			
+		public void build(PageRequest pr,QuerySetup qs) {
+			List<Predicate> backup = qs.getPredicates();
+			qs.setPredicates(new ArrayList());
 			if (rules != null)
 				for (Filter f : rules) {
 					Object realSearch = null;
@@ -201,94 +170,90 @@ public class QueryUtils {
 						logger.error("查询内容转换类别失败："+pr.getEntity()+":"+f.getField()+":"+f.getData());
 						continue;
 					}
-					String field = makeAlias(cs,f.getField());
-					Criterion one = null;
+					
+					String field = f.getField();
 					switch (f.getOp()) {
 					case "eq":// 等于
 						if(isDate)
-							one = Restrictions.and(Restrictions.ge(field,dateBegin),Restrictions.le(field,dateEnd));
+							qs.between(field, dateBegin, dateEnd);
 						else
-							one = Restrictions.eq(field, realSearch);
+							qs.eq(field, realSearch);
 						break;
 					case "ne":// 不等
 						if(isDate)
-							one = Restrictions.and(Restrictions.lt(field,dateBegin),Restrictions.gt(field,dateEnd));
+							qs.notBetween(field, dateBegin, dateEnd);
 						else
-							one = Restrictions.ne(field, realSearch);
+							qs.notEq(field, realSearch);
 						break;
 					case "gt":// 大于
 						if(isDate)
-							one = Restrictions.gt(field,dateEnd);
+							qs.gt(field,dateEnd);
 						else
-							one = Restrictions.gt(field, realSearch);
+							qs.gt(field, realSearch);
 						break;
 					case "ge":// 大于等于
 						if(isDate)
-							one = Restrictions.ge(field,dateBegin);
+							qs.ge(field,dateBegin);
 						else
-							one = Restrictions.ge(field, realSearch);
+							qs.ge(field, realSearch);
 						break;
 					case "lt":// 小于
 						if(isDate)
-							one = Restrictions.lt(field,dateBegin);
+							qs.lt(field,dateBegin);
 						else
-							one = Restrictions.lt(field, realSearch);
+							qs.lt(field, realSearch);
 						break;
 					case "le":// 小于等于
 						if(isDate)
-							one = Restrictions.le(field,dateEnd);
+							qs.le(field,dateEnd);
 						else
-							one = Restrictions.le(field, realSearch);
+							qs.le(field, realSearch);
 						break;
 					case "bw":// 开始于
-						one = Restrictions.like(field, f.getData(), MatchMode.START);
+						qs.like(field, f.getData()+"%");
 						break;
 					case "bn":// 不开始于
-						one = Restrictions.not(Restrictions.like(field, f.getData(), MatchMode.START));
+						qs.notLike(field, f.getData()+"%");
 						break;
 					case "ew":// 结束于
-						one = Restrictions.like(field, f.getData(), MatchMode.END);
+						qs.like(field, "%"+f.getData());
 						break;
 					case "en":// 不结束于
-						one = Restrictions.not(Restrictions.like(field, f.getData(), MatchMode.END));
+						qs.notLike(field, "%"+f.getData());
 						break;
 					case "cn":// 包含
-						one = Restrictions.like(field, f.getData(), MatchMode.ANYWHERE);
+						qs.like(field, f.getData());
 						break;
 					case "nc":// 不包含
-						one = Restrictions.not(Restrictions.like(field, f.getData(), MatchMode.ANYWHERE));
+						qs.notLike(field, f.getData());
 						break;
 					case "nu":// 空
-						one = Restrictions.isNull(field);
+						qs.isNull(field);
 						break;
 					case "nn":// 非空
-						one = Restrictions.isNotNull(field);
+						qs.isNotNull(field);
 						break;
 					case "in":// 属于
-						one = Restrictions.in(field, f.getData().split(","));
+						qs.in(field, Arrays.asList(f.getData().split(",")));
 						break;
 					case "ni":// 不属于
-						one = Restrictions.not(Restrictions.in(field, f.getData().split(",")));
+						qs.notIn(field, Arrays.asList(f.getData().split(",")));
 						break;
 					}
-					if (one != null)
-						total.add(one);
 
 				}
 			if (groups != null)
 				for (MultipleFilter mf : groups) {
-					total.add(mf.buildCriterion(pr, cs));
+					mf.build(pr, qs);
 				}
-			if (total.size() > 1) {
-				if ("AND".equalsIgnoreCase(groupOp))
-					return Restrictions.and(total.toArray(new Criterion[] {}));
-				else
-					return Restrictions.or(total.toArray(new Criterion[] {}));
-			} else if (total.size() == 1) {
-				return total.get(0);
-			} else {
-				return null;
+			if (qs.getPredicates().size() > 1) {
+				if ("OR".equalsIgnoreCase(groupOp)){
+					backup.add(qs.getCriteriaBuilder().or(qs.getPredicates().toArray(new Predicate[0])));
+					qs.setPredicates(new ArrayList());
+				}
 			}
+			qs.addCriterions(backup.toArray(new Predicate[0]));
+			
 		}
 
 		String groupOp;

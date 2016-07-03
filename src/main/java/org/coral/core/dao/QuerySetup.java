@@ -21,6 +21,7 @@ import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +72,7 @@ public class QuerySetup implements Serializable {
         this.predicates = new ArrayList();
         this.orders = new ArrayList();
     }
- 
+    
     /** 通过类创建查询条件 */
     public static QuerySetup forClass(Class clazz, EntityManager entityManager) {
         return new QuerySetup(clazz, entityManager);
@@ -129,9 +130,9 @@ public class QuerySetup implements Serializable {
             return;
         if ((propertyName == null) || (propertyName.size() == 0))
             return;
-        Predicate predicate = criteriaBuilder.or(criteriaBuilder.equal(from.get(propertyName.get(0)), value));
+        Predicate predicate = criteriaBuilder.or(criteriaBuilder.equal(getExpression(from,propertyName.get(0)), value));
         for (int i = 1; i < propertyName.size(); ++i)
-            predicate = criteriaBuilder.or(predicate, criteriaBuilder.equal(from.get(propertyName.get(i)), value));
+            predicate = criteriaBuilder.or(predicate, criteriaBuilder.equal(getExpression(from,propertyName.get(i)), value));
         this.predicates.add(predicate);
     }
  
@@ -140,20 +141,20 @@ public class QuerySetup implements Serializable {
             return;
         if (value.indexOf("%") < 0)
             value = "%" + value + "%";
-        Predicate predicate = criteriaBuilder.or(criteriaBuilder.like(from.get(propertyName.get(0)), value.toString()));
+        Predicate predicate = criteriaBuilder.or(criteriaBuilder.like(getExpression(from,propertyName.get(0)), value.toString()));
         for (int i = 1; i < propertyName.size(); ++i)
-            predicate = criteriaBuilder.or(predicate, criteriaBuilder.like(from.get(propertyName.get(i)), value));
+            predicate = criteriaBuilder.or(predicate, criteriaBuilder.like(getExpression(from,propertyName.get(i)), value));
         this.predicates.add(predicate);
     }
  
     /** 空 */
     public void isNull(String propertyName) {
-        this.predicates.add(criteriaBuilder.isNull(from.get(propertyName)));
+        this.predicates.add(criteriaBuilder.isNull(getExpression(from,propertyName)));
     }
  
     /** 非空 */
     public void isNotNull(String propertyName) {
-        this.predicates.add(criteriaBuilder.isNotNull(from.get(propertyName)));
+        this.predicates.add(criteriaBuilder.isNotNull(getExpression(from,propertyName)));
     }
  
     /** 不相等 */
@@ -161,7 +162,7 @@ public class QuerySetup implements Serializable {
         if (isNullOrEmpty(value)) {
             return;
         }
-        this.predicates.add(criteriaBuilder.notEqual(from.get(propertyName), value));
+        this.predicates.add(criteriaBuilder.notEqual(getExpression(from,propertyName), value));
     }
  
     /**
@@ -177,7 +178,7 @@ public class QuerySetup implements Serializable {
             return;
         }
         Iterator iterator = value.iterator();
-        In in = criteriaBuilder.in(from.get(propertyName));
+        In in = criteriaBuilder.in(getExpression(from,propertyName));
         while (iterator.hasNext()) {
             in.value(iterator.next());
         }
@@ -197,9 +198,16 @@ public class QuerySetup implements Serializable {
             return;
         if (value.indexOf("%") < 0)
             value = "%" + value + "%";
-        this.predicates.add(criteriaBuilder.like(from.get(propertyName), value));
+        this.predicates.add(criteriaBuilder.like(getExpression(from,propertyName), value));
     }
- 
+    
+    public void notLike(String propertyName, String value) {
+        if (isNullOrEmpty(value))
+            return;
+        if (value.indexOf("%") < 0)
+            value = "%" + value + "%";
+        this.predicates.add(criteriaBuilder.notLike(getExpression(from,propertyName), value));
+    }
     /**
      * 时间区间查询
      * 
@@ -210,29 +218,20 @@ public class QuerySetup implements Serializable {
      * @param go
      *            属性结束值
      */
-    public void between(String propertyName, Date lo, Date go) {
-        if (!isNullOrEmpty(lo) && !isNullOrEmpty(go)) {
-            this.predicates.add(criteriaBuilder.between(from.get(propertyName), lo, go));
-        }
- 
-        // if (!isNullOrEmpty(lo) && !isNullOrEmpty(go)) {
-        // this.predicates.add(criteriaBuilder.lessThan(from.get(propertyName),
-        // new DateTime(lo).toString()));
-        // }
-        // if (!isNullOrEmpty(go)) {
-        // this.predicates.add(criteriaBuilder.greaterThan(from.get(propertyName),
-        // new DateTime(go).toString()));
-        // }
- 
+	public void between(String propertyName, Object begin, Object end) {
+        if(!isNullOrEmpty(begin)) {
+			this.predicates.add(criteriaBuilder.greaterThanOrEqualTo(getExpression(from,propertyName),(Comparable)  begin));
+		}else if(!isNullOrEmpty(end)) {
+			this.predicates.add(criteriaBuilder.lessThanOrEqualTo(getExpression(from,propertyName),(Comparable)  end));
+		}
     }
- 
-    public void between(String propertyName, Number lo, Number go) {
-        if (!(isNullOrEmpty(lo)))
-            ge(propertyName, lo);
- 
-        if (!(isNullOrEmpty(go)))
-            le(propertyName, go);
-    }
+	
+	public void notBetween(String propertyName, Object begin, Object end) {
+		if(!isNullOrEmpty(begin) && !isNullOrEmpty(end)) {
+			this.predicates.add(criteriaBuilder.lessThan(getExpression(from,propertyName),(Comparable)  begin));
+			this.predicates.add(criteriaBuilder.greaterThan(getExpression(from,propertyName),(Comparable) end));
+		}
+	}
  
     /**
      * 小于等于
@@ -242,11 +241,11 @@ public class QuerySetup implements Serializable {
      * @param value
      *            属性值
      */
-    public void le(String propertyName, Number value) {
+    public void le(String propertyName, Object value) {
         if (isNullOrEmpty(value)) {
             return;
         }
-        this.predicates.add(criteriaBuilder.le(from.get(propertyName), value));
+        this.predicates.add(criteriaBuilder.lessThanOrEqualTo(getExpression(from,propertyName), (Comparable) value));
     }
  
     /**
@@ -257,11 +256,11 @@ public class QuerySetup implements Serializable {
      * @param value
      *            属性值
      */
-    public void lt(String propertyName, Number value) {
+    public void lt(String propertyName, Object value) {
         if (isNullOrEmpty(value)) {
             return;
         }
-        this.predicates.add(criteriaBuilder.lt(from.get(propertyName), value));
+        this.predicates.add(criteriaBuilder.lessThan(getExpression(from,propertyName), (Comparable) value));
     }
  
     /**
@@ -272,11 +271,11 @@ public class QuerySetup implements Serializable {
      * @param value
      *            属性值
      */
-    public void ge(String propertyName, Number value) {
+    public void ge(String propertyName, Object value) {
         if (isNullOrEmpty(value)) {
             return;
         }
-        this.predicates.add(criteriaBuilder.ge(from.get(propertyName), value));
+        this.predicates.add(criteriaBuilder.greaterThanOrEqualTo(getExpression(from,propertyName), (Comparable) value));
     }
  
     /**
@@ -287,11 +286,11 @@ public class QuerySetup implements Serializable {
      * @param value
      *            属性值
      */
-    public void gt(String propertyName, Number value) {
+    public void gt(String propertyName, Object value) {
         if (isNullOrEmpty(value)) {
             return;
         }
-        this.predicates.add(criteriaBuilder.gt(from.get(propertyName), value));
+        this.predicates.add(criteriaBuilder.greaterThan(getExpression(from,propertyName),(Comparable) value));
     }
  
     /**
@@ -307,16 +306,18 @@ public class QuerySetup implements Serializable {
             return;
         }
         Iterator iterator = value.iterator();
-        In in = criteriaBuilder.in(from.get(propertyName));
+        In in = criteriaBuilder.in(getExpression(from,propertyName));
         while (iterator.hasNext()) {
             in.value(iterator.next());
         }
         this.predicates.add(in);
     }
+    
  
     /** 直接添加JPA内部的查询条件,用于应付一些复杂查询的情况,例如或 */
-    public void addCriterions(Predicate predicate) {
-        this.predicates.add(predicate);
+    public void addCriterions(Predicate... predicates) {
+    	for(Predicate p: predicates)
+    		this.predicates.add(p);
     }
  
     /**
@@ -327,7 +328,7 @@ public class QuerySetup implements Serializable {
     public CriteriaQuery newCriteriaQuery() {
         criteriaQuery.where(predicates.toArray(new Predicate[0]));
         if (!isNullOrEmpty(groupBy)) {
-            criteriaQuery.groupBy(from.get(groupBy));
+            criteriaQuery.groupBy(getExpression(from,groupBy));
         }
         if (this.orders != null) {
             criteriaQuery.orderBy(orders);
