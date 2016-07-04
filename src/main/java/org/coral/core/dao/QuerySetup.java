@@ -221,7 +221,8 @@ public class QuerySetup implements Serializable {
 	public void between(String propertyName, Object begin, Object end) {
         if(!isNullOrEmpty(begin)) {
 			this.predicates.add(criteriaBuilder.greaterThanOrEqualTo(getExpression(from,propertyName),(Comparable)  begin));
-		}else if(!isNullOrEmpty(end)) {
+		}
+        if(!isNullOrEmpty(end)) {
 			this.predicates.add(criteriaBuilder.lessThanOrEqualTo(getExpression(from,propertyName),(Comparable)  end));
 		}
     }
