@@ -212,6 +212,7 @@ public abstract class BaseService<T extends BaseEntity> {
 	 */
 	public List<T> getAll() {
 		CriteriaQuery<T> criteriaQuery = em.getCriteriaBuilder().createQuery(getEntityClass());
+		Root<T> r = criteriaQuery.from(getEntityClass());
 		return em.createQuery(criteriaQuery).getResultList();
 	}
 
