@@ -1,6 +1,5 @@
 package org.coral.core.persistence.postgresql;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -9,15 +8,13 @@ import java.sql.Types;
 import java.util.Properties;
 
 import org.hibernate.HibernateException;
-import org.hibernate.engine.spi.SessionImplementor;
 import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.internal.util.ReflectHelper;
 import org.hibernate.usertype.ParameterizedType;
 import org.hibernate.usertype.UserType;
 import org.postgresql.util.PGobject;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * A {@link UserType} that persists objects as JSONB.
@@ -32,7 +29,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JSONBUserType extends CollectionUserType implements
     ParameterizedType {
 
-  private static final ObjectMapper MAPPER = new ObjectMapper();
   private static final String JSONB_TYPE = "jsonb";
   public static final String CLASS = "CLASS";
   private Class returnedClass;
@@ -52,8 +48,8 @@ public class JSONBUserType extends CollectionUserType implements
 			throws HibernateException, SQLException {
     try {
       final String json = rs.getString(names[0]);
-      return json == null? null : MAPPER.readValue(json, returnedClass);
-    } catch (IOException ex) {
+      return json == null? null : JSONObject.parseObject(json, returnedClass);
+    } catch (Exception ex) {
       throw new HibernateException(ex);
     }
   }
@@ -62,13 +58,14 @@ public class JSONBUserType extends CollectionUserType implements
   public void nullSafeSet(PreparedStatement st, Object value, int index, SharedSessionContractImplementor session)
 			throws HibernateException, SQLException {
     try {
-      final String json = value == null ? null : MAPPER.writeValueAsString(value);
+    	
+      final String json = value == null ? null : JSONObject.toJSONString(value);
       // otherwise PostgreSQL won't recognize the type
       PGobject pgo = new PGobject();
       pgo.setType(JSONB_TYPE);
       pgo.setValue(json);
       st.setObject(index, pgo);
-    } catch (JsonProcessingException ex) {
+    } catch (Exception ex) {
       throw new HibernateException(ex);
     }
   }

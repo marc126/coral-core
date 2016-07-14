@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 
 import org.coral.core.entity.BaseEntity;
-import org.coral.core.mapper.JsonMapper;
 import org.coral.core.utils.BeanUtils;
 import org.coral.core.utils.UtilDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 
 import ognl.Ognl;
 
@@ -53,10 +53,10 @@ public class Page<T extends BaseEntity> implements Serializable {
 	int total;
 	//每页大小
 	int size;
-	@JsonIgnore
+	@JSONField(serialize=false)
 	List<T> entitys;
 	
-	@JsonIgnore
+	@JSONField(serialize=false)
 	String[] rowNames;
 	
 	Map<String,Object> userdata;
@@ -86,8 +86,7 @@ public class Page<T extends BaseEntity> implements Serializable {
 	}
 	@Override
 	public String toString(){
-		JsonMapper j = new JsonMapper();
-		return j.toJson(this);
+		return JSONObject.toJSONString(this);
 	}
 
 	/**

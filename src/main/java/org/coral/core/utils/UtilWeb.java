@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.coral.core.exception.Assert;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSONObject;
 import com.google.common.net.HttpHeaders;
 
 /**
@@ -40,7 +40,6 @@ public class UtilWeb {
 	private static final String DEFAULT_ENCODING = "UTF-8";
 	private static final boolean DEFAULT_NOCACHE = true;
 
-	private static ObjectMapper mapper = new ObjectMapper();
 
 	/**
 	 * 设置客户端缓存过期时间 的Header.
@@ -251,7 +250,7 @@ public class UtilWeb {
 	public static void renderJson(final HttpServletResponse response, final Object data, final String... headers) {
 		HttpServletResponse res = initResponseHeader(response, JSON_TYPE, headers);
 		try {
-			mapper.writeValue(res.getWriter(), data);
+			JSONObject.writeJSONString(res.getWriter(), data);
 		} catch (IOException e) {
 			throw new IllegalArgumentException(e);
 		}
@@ -269,8 +268,8 @@ public class UtilWeb {
 			final String... headers) {
 		String jsonString = null;
 		try {
-			jsonString = mapper.writeValueAsString(object);
-		} catch (IOException e) {
+			jsonString = JSONObject.toJSONString(object);
+		} catch (Exception e) {
 			throw new IllegalArgumentException(e);
 		}
 
