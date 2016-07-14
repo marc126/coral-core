@@ -16,8 +16,8 @@ import org.coral.core.utils.BeanUtils;
 import org.coral.core.utils.UtilDateTime;
 import org.coral.core.utils.UtilString;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 /**
  * @author marc
@@ -106,10 +106,9 @@ public class QueryUtils {
 	}
 	
 	private static void buildMultipleFilter(PageRequest pr, QuerySetup qs) {
-		ObjectMapper mapper = new ObjectMapper();
+
 		try {
-			JsonNode jn = mapper.readTree(pr.getFilters());
-			MultipleFilter f = new QueryUtils().new MultipleFilter(jn);
+			MultipleFilter f = new QueryUtils().new MultipleFilter(JSONObject.parseObject(pr.getFilters()));
 			f.build(pr,qs);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -118,23 +117,20 @@ public class QueryUtils {
 
 
 	public class MultipleFilter {
-		public MultipleFilter(JsonNode node) {
-			if (node.has("groupOp") && node.has("rules")) {
-				this.groupOp = node.get("groupOp").asText();
-				JsonNode rules = node.get("rules");
-				Iterator<JsonNode> rulesIt = rules.elements();
+		public MultipleFilter(JSONObject node) {
+			if (node.containsKey("groupOp") && node.containsKey("rules")) {
+				this.groupOp = node.getString("groupOp");
+				JSONArray rules = node.getJSONArray("rules");
 				this.rules = new ArrayList<Filter>();
-				while (rulesIt.hasNext()) {
-					JsonNode r = rulesIt.next();
-					this.rules.add(new Filter(r.get("field").asText(), r.get(
-							"op").asText(), r.get("data").asText()));
+				for(int i=0;i<rules.size();i++){
+					JSONObject r = rules.getJSONObject(i);
+					this.rules.add(new Filter(r.getString("field"), r.getString("op"), r.getString("data")));
 				}
-				if (node.has("groups")) {
-					JsonNode groups = node.get("groups");
-					Iterator<JsonNode> groupIt = groups.elements();
-					this.groups = new ArrayList<MultipleFilter>();
-					while (groupIt.hasNext()) {
-						JsonNode r = groupIt.next();
+				this.groups = new ArrayList<MultipleFilter>();
+				if(node.containsKey("groups")){
+					JSONArray groups = node.getJSONArray("groups");
+					for(int i=0;i<groups.size();i++){
+						JSONObject r = groups.getJSONObject(i);
 						this.groups.add(new MultipleFilter(r));
 					}
 				}
