@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder.In;
@@ -278,7 +279,11 @@ public abstract class BaseService<T extends BaseEntity> {
 		Root<T> r = criteriaQuery.from(getEntityClass());
 		Predicate p = em.getCriteriaBuilder().equal(r.get(propertyName), value);
 		criteriaQuery.where(p);
-		return em.createQuery(criteriaQuery).getSingleResult();
+		try{
+			return em.createQuery(criteriaQuery).getSingleResult();
+		}catch(NoResultException e){
+			return null;
+		}
 	}
 
 	/**
@@ -308,7 +313,11 @@ public abstract class BaseService<T extends BaseEntity> {
 	 *            数量可变的参数,按顺序绑定.
 	 */
 	public <X> X findUnique(final String hql, final Object... values) {
-		return (X) createQuery(hql, values).getSingleResult();
+		try{
+			return (X) createQuery(hql, values).getSingleResult();
+		}catch(NoResultException e){
+			return null;
+		}
 	}
 
 	/**
@@ -318,7 +327,11 @@ public abstract class BaseService<T extends BaseEntity> {
 	 *            命名参数,按名称绑定.
 	 */
 	public <X> X findUnique(final String hql, final Map<String, ?> values) {
-		return (X) createQuery(hql, values).getSingleResult();
+		try{
+			return (X) createQuery(hql, values).getSingleResult();
+		}catch(NoResultException e){
+			return null;
+		}
 	}
 
 	/**
