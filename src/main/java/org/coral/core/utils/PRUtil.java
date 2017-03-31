@@ -9,6 +9,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +38,25 @@ public class PRUtil {
 	private static final int FRAME_WIDTH = 2;
 	private static final int BLACK = 0xFF000000;
 	private static final int WHITE = 0xFFFFFFFF;
-
+	/**
+	 * 生成普通二维码
+	 * 
+	 */
+	public static void encodePR(String contents, int width, int height,
+			OutputStream os) {
+		Map<EncodeHintType, Object> hints = new HashMap<EncodeHintType, Object>();
+		// 指定纠错等级
+		hints.put(EncodeHintType.ERROR_CORRECTION, ErrorCorrectionLevel.L);
+		// 指定编码格式
+		hints.put(EncodeHintType.CHARACTER_SET, "GBK");
+		try {
+			BitMatrix bitMatrix = new MultiFormatWriter().encode(contents,
+					BarcodeFormat.QR_CODE, width, height, hints);
+			MatrixToImageWriter.writeToStream(bitMatrix, "jpg", os);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * 生成普通二维码
 	 * 
