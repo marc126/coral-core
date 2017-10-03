@@ -12,25 +12,25 @@
 		<!-- 主要依赖库的版本定义 -->
 		<ehcache.version>2.6.11</ehcache.version>
 		<ehcache-web.version>2.0.4</ehcache-web.version>
-		<ognl.version>3.1.10</ognl.version>
-		<freemarker.version>2.3.23</freemarker.version>
-		<dbunit.version>2.5.2</dbunit.version>
-		<spring.version>4.3.0.RELEASE</spring.version>
-		<hibernate.version>5.2.1.Final</hibernate.version>
-		<spring-data-jpa.version>1.10.2.RELEASE</spring-data-jpa.version>
+		<ognl.version>3.2.3</ognl.version>
+		<freemarker.version>2.3.26-incubating</freemarker.version>
+		<dbunit.version>2.5.4</dbunit.version>
+		<spring.version>5.0.0.RELEASE</spring.version>
+		<hibernate.version>5.2.11.Final</hibernate.version>
+		<spring-data-jpa.version>2.0.0.RELEASE</spring-data-jpa.version>
 		<sitemesh.version>2.4.2</sitemesh.version>
-		<hibernate-validator.version>5.2.2.Final</hibernate-validator.version>
-		<logback.version>1.1.7</logback.version>
+		<hibernate-validator.version>6.0.2.Final</hibernate-validator.version>
+		<logback.version>1.2.3</logback.version>
 		<slf4j.version>1.7.21</slf4j.version>
-		<commons-lang3.version>3.4</commons-lang3.version>
-		<commons-beanutils.version>1.9.2</commons-beanutils.version>
-		<guava.version>19.0</guava.version>
-		<joda-time.version>2.9.4</joda-time.version>
+		<commons-lang3.version>3.6</commons-lang3.version>
+		<commons-beanutils.version>1.9.3</commons-beanutils.version>
+		<guava.version>23.1-jre</guava.version>
+		<joda-time.version>2.9.9</joda-time.version>
 		<junit.version>4.12</junit.version>
-		<xmemcached.version>2.0.0</xmemcached.version>
+		<xmemcached.version>2.3.2</xmemcached.version>
 		<dozer.version>5.5.1</dozer.version>
-		<poi.version>3.13</poi.version>
-		<orika-core.version>1.4.2</orika-core.version>
+		<poi.version>3.17</poi.version>
+		<orika-core.version>1.5.1</orika-core.version>
 
 		<!-- Plugin的属性定义 -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -45,7 +45,7 @@
 			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
 			<scope>compile</scope>
-			<version>9.4.1208.jre7</version>
+			<version>42.1.4.jre7</version>
 		</dependency>
 		<dependency>
 		   <groupId>ma.glasnost.orika</groupId>
@@ -131,7 +131,7 @@
 			<groupId>javax.mail</groupId>
 			<artifactId>mail</artifactId>
 			<scope>compile</scope>
-			<version>1.4.7</version>
+			<version>1.5.0-b01</version>
 		</dependency>
 		<dependency>
 			<groupId>javax.activation</groupId>
@@ -144,24 +144,24 @@
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjrt</artifactId>
 			<scope>compile</scope>
-			<version>1.8.9</version>
+			<version>1.8.11</version>
 		</dependency>
 		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjweaver</artifactId>
 			<scope>compile</scope>
-			<version>1.8.9</version>
+			<version>1.8.11</version>
 		</dependency>
 		<dependency>
 			<groupId>cglib</groupId>
 			<artifactId>cglib</artifactId>
-			<version>3.2.4</version>
+			<version>3.2.5</version>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>asm</groupId>
 			<artifactId>asm</artifactId>
-			<version>3.3.1</version>
+			<version>20041228.180559</version>
 			<scope>runtime</scope>
 		</dependency>
 		<!-- AOP end -->
@@ -255,7 +255,7 @@
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>javax.servlet-api</artifactId>
-			<version>3.1.0</version>
+			<version>4.0.0</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- WEB end -->
@@ -278,7 +278,7 @@
 		<dependency>
 			<groupId>com.alibaba</groupId>
 			<artifactId>fastjson</artifactId>
-			<version>1.2.13</version>
+			<version>1.2.39</version>
 		</dependency>
 		<!-- JSON end -->
 
@@ -346,13 +346,13 @@
 			<groupId>com.google.zxing</groupId>
 			<artifactId>core</artifactId>
 			<scope>compile</scope>
-			<version>3.2.1</version>
+			<version>3.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.zxing</groupId>
 			<artifactId>javase</artifactId>
 			<scope>compile</scope>
-			<version>3.2.1</version>
+			<version>3.3.0</version>
 		</dependency>
 		<!-- TEST begin -->
 		<dependency>
